@@ -27,14 +27,32 @@ class Routes{
             }
         })
 
-        app.post("/getOrders",(req:Request,res:Response)=>{
-            OrderedDbInstance.find((err,docs)=>{
-                if (!err){
-                    res.status(200).json(docs);
-                }else{
-                    res.status(400).json([]);
-                }
-            })
+        app.post("/getOrders",async(req:Request,res:Response)=>{
+            try{
+                const availableDb = await OrderedDbInstance.findOne({deviceId:req.body.where.deviceId});
+                const availableDbInObjectFormat = availableDb.toObject();
+                res.status(200).json(availableDbInObjectFormat["products"]);
+            }catch(err){
+                res.status(200).json([]);
+            }
+            
+            // OrderedDbInstance.find((err,docs)=>{
+            //     if (!err){
+            //         res.status(200).json(docs);
+            //     }else{
+            //         res.status(400).json([]);
+            //     }
+            // })
+        })
+
+        app.delete("/deleteOrder",async(req:Request,res:Response)=>{
+            try{
+                await OrderedDbInstance.findOneAndDelete({id:req.body.where.id});
+                res.status(200).json({"status":true});
+            }
+            catch(err){
+                res.status(400).json({"status":false})
+            }
         })
     }
 }
