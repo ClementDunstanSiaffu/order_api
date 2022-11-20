@@ -31,12 +31,16 @@ class Routes{
         app.post("/getOrders",async(req:Request,res:Response)=>{
             try{
                 const availableDb = await OrderedDbInstance.findOne({deviceId:req.body.where.deviceId});
-                const availableDbInObjectFormat = availableDb.toObject();
-                res.status(200).json(availableDbInObjectFormat["products"]);
+                if (availableDb){
+                    const availableDbInObjectFormat = availableDb.toObject();
+                    res.status(200).json(availableDbInObjectFormat["products"]);
+                }else{
+                    res.status(200).json([]);
+                }
+                
             }catch(err){
                 res.status(200).json([]);
             }
-
         })
 
         app.delete("/deleteOrder",async(req:Request,res:Response)=>{
