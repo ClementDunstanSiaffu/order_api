@@ -1,6 +1,7 @@
 
 import {Request,Response} from 'express';
 import mongoose from "mongoose";
+import helper from '../helper/helper';
 import { AppType } from "../types/types";
 const OrderedDbInstance = mongoose.model("ORDERS_SCHEMA");
 
@@ -35,19 +36,19 @@ class Routes{
             }catch(err){
                 res.status(200).json([]);
             }
-            
-            // OrderedDbInstance.find((err,docs)=>{
-            //     if (!err){
-            //         res.status(200).json(docs);
-            //     }else{
-            //         res.status(400).json([]);
-            //     }
-            // })
+
         })
 
         app.delete("/deleteOrder",async(req:Request,res:Response)=>{
             try{
-                await OrderedDbInstance.findOneAndDelete({id:req.body.where.id});
+                const availabaleOrderInstance = await OrderedDbInstance.findOne({deviceId:req.body.where.deviceId});
+                const availableOrderInstanceInObjectFormat = availabaleOrderInstance.toObject(); 
+                const newProductArraay = helper.deleteProduct(availableOrderInstanceInObjectFormat["products"],req.body.where.id);
+                const newOrderInstance = {
+                    "deviceId":req.body.where.deviceId,
+                    "products":newProductArraay
+                }
+                await OrderedDbInstance.replaceOne(availableOrderInstanceInObjectFormat,newOrderInstance)
                 res.status(200).json({"status":true});
             }
             catch(err){
